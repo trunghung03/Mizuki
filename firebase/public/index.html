@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LED Switch & Incrementer</title>
+    <style>
+        body {
+            transition: background-color 0.5s, color 0.5s;  /* Gradual transition for background and text color */
+            font-family: Arial, sans-serif;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;  /* Stack children vertically */
+        }
+
+        /* Dark Mode styles */
+        body.dark-mode {
+            background-color: #121212; /* Near Black */
+            color: #ffffff; /* White */
+        }
+
+        #brandBanner {
+            font-size: 48px;
+            font-weight: bold;
+            margin-bottom: 30px;  /* Add some spacing below the banner */
+        }
+
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 120px;
+            height: 68px;
+            margin-bottom: 20px;  /* Spacing between switch and incrementer */
+        }
+
+        .switch input {
+            display: none;
+        }
+        .slider {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .2s;
+            border-radius: 34px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 52px;
+            width: 52px;
+            left: 8px;
+            bottom: 8px;
+            background-color: white;
+            transition: .2s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: #2196F3;
+        }
+        input:checked + .slider:before {
+            transform: translateX(52px);
+        }
+        #incrementButton {
+            padding: 10px 20px;  /* Increase button size by adding more padding */
+            font-size: 18px;  /* Make font size larger */
+            cursor: pointer;  /* Change cursor on hover to indicate it's clickable */
+        }
+
+        #incrementValue {
+            padding: 5px;
+            font-size: 18px;  /* Make font size of input larger */
+            margin-right: 10px;  /* Spacing between input and button */
+            width: 80px;  /* Set a specific width for the input box */
+        }
+    </style>
+</head>
+<body>
+    <h1 id="brandBanner">MIZUKI</h1>
+
+    <label class="switch">
+        <input type="checkbox" id="ledSwitch">
+        <span class="slider"></span>
+    </label>
+
+    <script>
+        document.getElementById('ledSwitch').addEventListener('change', function() {
+            let ledState = this.checked ? 1 : 0;
+
+            // Set dark mode if LED is ON, else light mode.
+            if(ledState === 0) {
+                document.body.classList.add('dark-mode');
+            } else {
+                document.body.classList.remove('dark-mode');
+            }
+
+            fetch(`https://setled-43r63vujhq-uc.a.run.app?led=${ledState}`, {
+                method: 'GET'
+            })
+            .then(response => response.text())
+            .then(data => console.log(data))
+            .catch(error => console.error('Error:', error));
+        });        
+
+        function updateLEDStatus() {
+            fetch('https://getled-43r63vujhq-uc.a.run.app')  
+            .then(response => response.text())
+            .then(data => {
+                if(data === '1') {
+                    document.getElementById('ledSwitch').checked = true;
+                    document.body.classList.remove('dark-mode');
+                } else if(data === '0') {
+                    document.getElementById('ledSwitch').checked = false;
+                    document.body.classList.add('dark-mode');
+                } else {
+                    console.warn('Unexpected LED data:', data);
+                }
+            })
+            .catch(error => console.error('Error fetching LED status:', error));
+        }
+
+        updateLEDStatus();  
+    </script>
+</body>
+</html>
